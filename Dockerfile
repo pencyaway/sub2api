@@ -21,7 +21,9 @@ FROM ${NODE_IMAGE} AS frontend-builder
 WORKDIR /app/frontend
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+ENV COREPACK_NPM_REGISTRY=https://registry.npmmirror.com
+RUN npm config set registry https://registry.npmmirror.com \
+    && corepack enable && corepack prepare pnpm@latest --activate
 
 # Install dependencies first (better caching)
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
@@ -47,7 +49,8 @@ ENV GOPROXY=${GOPROXY}
 ENV GOSUMDB=${GOSUMDB}
 
 # Install build dependencies
-RUN apk add --no-cache git ca-certificates tzdata
+RUN sed -i 's|dl-cdn.alpinelinux.org|mirrors.aliyun.com|g' /etc/apk/repositories \
+    && apk add --no-cache git ca-certificates tzdata
 
 WORKDIR /app/backend
 
@@ -89,7 +92,8 @@ LABEL description="Sub2API - AI API Gateway Platform"
 LABEL org.opencontainers.image.source="https://github.com/Wei-Shaw/sub2api"
 
 # Install runtime dependencies
-RUN apk add --no-cache \
+RUN sed -i 's|dl-cdn.alpinelinux.org|mirrors.aliyun.com|g' /etc/apk/repositories \
+    && apk add --no-cache \
     ca-certificates \
     tzdata \
     su-exec \
